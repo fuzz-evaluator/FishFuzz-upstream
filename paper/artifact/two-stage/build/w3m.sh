@@ -116,3 +116,12 @@ export EXTRA_LDFLAGS="-ldl -lpthread -lrt -lm -L$SRC_DIR -L$SRC_DIR/libwc -linde
 $CC $BC_PATH$FF_DRIVER_NAME.0.5.precodegen.bc -o $FF_DRIVER_NAME.neutral $EXTRA_LDFLAGS $ASAN_LIBS
 mv $FF_DRIVER_NAME.neutral $FUZZ_DIR/$FF_DRIVER_NAME
 
+# build coverage binary
+cd && rm -r $SRC_DIR/ && cp -r /benchmark/source/w3m-v0.5.3+git20220429 /benchmark
+
+export FUZZ_DIR=/binary/coverage
+mkdir -p $FUZZ_DIR
+export CC="clang -fprofile-instr-generate -fcoverage-mapping"
+export CXX="clang++ -fprofile-instr-generate -fcoverage-mapping"
+cd $SRC_DIR && ./configure --disable-shared && make -j$(nproc)
+mv $(find . -name $FF_DRIVER_NAME -printf "%h\n")/$FF_DRIVER_NAME $FUZZ_DIR/

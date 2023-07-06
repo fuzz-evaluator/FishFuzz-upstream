@@ -110,3 +110,12 @@ export ASAN_LIBS=$(find `llvm-config --libdir` -name libclang_rt.asan-`uname -m`
 export EXTRA_LDFLAGS="-ldl -lpthread -lrt -lm"
 $CC $BC_PATH$FF_DRIVER_NAME.0.5.precodegen.bc -o $FF_DRIVER_NAME.neutral $EXTRA_LDFLAGS $ASAN_LIBS
 mv $FF_DRIVER_NAME.neutral $FUZZ_DIR/$FF_DRIVER_NAME
+# build coverage binary
+cd && rm -r $SRC_DIR/ && tar xzf /benchmark/source/mujs-1.0.2.tar.gz -C /benchmark
+
+export FUZZ_DIR=/binary/coverage
+mkdir -p $FUZZ_DIR
+export CC="clang -fprofile-instr-generate -fcoverage-mapping"
+export CXX="clang++ -fprofile-instr-generate -fcoverage-mapping"
+cd $SRC_DIR && make -j$(nproc)
+mv $(find . -name $FF_DRIVER_NAME -printf "%h\n")/$FF_DRIVER_NAME $FUZZ_DIR/
