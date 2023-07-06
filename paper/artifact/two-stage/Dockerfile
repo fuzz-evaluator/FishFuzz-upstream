@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as base
 
 # for binutils & llvm-12 dependencies
 RUN apt update && \
@@ -40,10 +40,14 @@ RUN apt-get update && \
 
 # build FF_AFL
 # COPY FF_AFL /FishFuzz 
-RUN  git clone https://github.com/HexHive/FishFuzz /ff_repo && \
-     cd /ff_repo && git checkout 88735f0a218baa0bbce40a89cc8910fde1c50c1a && \
-    mv /ff_repo/FF_AFL /FishFuzz && mv /ff_repo/FF_AFL++ /Fish++ && \
-    # mv $(find /ff_repo/paper/two-stage -type d -name build) /build_script && \
+
+# Copy the repo from this host instead of using git, thus we can test changes without pushing.
+# Unfortunately, this will cause cache invalidation for all consecutive steps.
+# The repo copy located at FishFuzz-upstream needs to be update by script calling us.
+COPY FishFuzz-upstream /ff_repo
+
+RUN mv /ff_repo/FF_AFL /FishFuzz && mv /ff_repo/FF_AFL++ /Fish++ && \
+    mv /ff_repo/paper/artifact/two-stage/build /build_script && \
     rm -r /ff_repo
 
 COPY build/ /build_script
@@ -84,7 +88,7 @@ RUN git clone https://github.com/google/afl /AFL && \
 
 # prepare source package
 RUN mkdir -p /benchmark/source/ /binary/afl \
-    /binary/aflpp /binary/ffafl /binary/ffapp /binary/neutral && \
+    /binary/aflpp /binary/ffafl /binary/ffapp /binary/neutral /binary/coverage && \
     cd /benchmark/source/ && \
     wget https://ftp.gnu.org/gnu/cflow/cflow-1.6.tar.gz && \
     wget https://ftp.gnu.org/gnu/binutils/binutils-2.30.tar.gz && \
@@ -109,16 +113,32 @@ RUN apt update && apt install python3-pip -y && pip3 install progress
 
 RUN chmod +x /build_script/*.sh 
 
+FROM base as cflow
 RUN /build_script/cflow.sh 
 
+FROM base as cxxfilt
 RUN /build_script/cxxfilt.sh 
 
+FROM base as dwarfdump
 RUN /build_script/dwarfdump.sh 
 
+FROM base as mujs
 RUN /build_script/mujs.sh
 
+FROM base as mupdf
 RUN /build_script/mupdf.sh 
 
+FROM base as tic
 RUN /build_script/tic.sh 
 
+FROM base as w3m
 RUN /build_script/w3m.sh 
+
+FROM base AS final
+COPY --from=cflow /binary /binary
+COPY --from=cxxfilt /binary /binary
+COPY --from=dwarfdump /binary /binary
+COPY --from=mujs /binary /binary
+COPY --from=mupdf /binary /binary
+COPY --from=tic /binary /binary
+COPY --from=w3m /binary /binary
