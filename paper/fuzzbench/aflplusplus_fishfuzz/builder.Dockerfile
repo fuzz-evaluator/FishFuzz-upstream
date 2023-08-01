@@ -85,7 +85,7 @@ RUN update-alternatives \
 ENV PATH="/usr/bin:${PATH}"
 
 ## Download fishfuzz.
-RUN git clone https://github.com/fuzz-evaluator/FishFuzz-upstream.git/ /afl && \
+RUN git clone -b fuzz-evaluator https://github.com/fuzz-evaluator/FishFuzz-upstream.git /afl && \
    mv /afl/FF_AFL++ /FishFuzz
 
 # COPY FF_AFL++ /FishFuzz 
