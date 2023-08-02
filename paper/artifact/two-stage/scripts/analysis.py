@@ -100,6 +100,12 @@ class AnalysisOneResults:
       return 
     with open(self.__map_path, 'rb') as ft:
       shm_map = ft.read()
+    expected_bitmap_size = self.MAP_SIZE + self.FUNC_SIZE + self.CMP_SIZE
+    if len(shm_map) < expected_bitmap_size:
+      print('!!! Adapting bitmap size as we apparently using afl-showmap from vanilla AFL.')
+      new_shm_map = bytearray(expected_bitmap_size)
+      new_shm_map[:len(shm_map)] = shm_map
+      shm_map = new_shm_map
     for _eid in range(self.MAP_SIZE):
       if shm_map[_eid] and self.__all_cov_map[fuzzer][_eid] == 0:
         self.__all_cov_map[fuzzer][_eid] = 1

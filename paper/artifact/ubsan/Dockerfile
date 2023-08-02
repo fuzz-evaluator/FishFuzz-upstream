@@ -41,7 +41,7 @@ RUN apt-get update && \
 # build FF_AFL
 # COPY ../../../FishFuzz /ff_repo
 
-RUN  git clone -b fuzz-evaluator https://github.com/fuzz-evaluator/FishFuzz-upstream.git /ff_repo && \
+RUN  git clone https://github.com/fuzz-evaluator/FishFuzz-upstream.git /ff_repo && \
      cd /ff_repo && git checkout 88735f0a218baa0bbce40a89cc8910fde1c50c1a && \
      mv /ff_repo/FF_AFL /FishFuzz && mv /ff_repo/FF_AFL++ /Fish++ && \
     #  mv $(find /ff_repo/paper/ubsan -type d -name build) /build_script && \

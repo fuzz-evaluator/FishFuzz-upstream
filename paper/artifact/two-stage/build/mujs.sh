@@ -119,3 +119,14 @@ export CC="clang -fprofile-instr-generate -fcoverage-mapping"
 export CXX="clang++ -fprofile-instr-generate -fcoverage-mapping"
 cd $SRC_DIR && make -j$(nproc)
 mv $(find . -name $FF_DRIVER_NAME -printf "%h\n")/$FF_DRIVER_NAME $FUZZ_DIR/
+
+# build afl binary with bigger bitmap
+cd && rm -r $SRC_DIR/ && tar xzf /benchmark/source/mujs-1.0.2.tar.gz -C /benchmark
+
+export FUZZ_DIR=/binary/afl-map-size-18
+mkdir -p $FUZZ_DIR
+export CC="/AFL-map-size-18/afl-clang-fast -fsanitize=address"
+export CXX="/AFL-map-size-18/afl-clang-fast++ -fsanitize=address"
+
+cd $SRC_DIR && make -j$(nproc)
+mv $(find . -name $FF_DRIVER_NAME -printf "%h\n")/$FF_DRIVER_NAME $FUZZ_DIR/

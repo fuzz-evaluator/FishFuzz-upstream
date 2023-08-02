@@ -125,3 +125,14 @@ export CC="clang -fprofile-instr-generate -fcoverage-mapping"
 export CXX="clang++ -fprofile-instr-generate -fcoverage-mapping"
 cd $SRC_DIR && autoreconf -i -f && ./configure --disable-shared && make -j$(nproc)
 mv $(find . -name $FF_DRIVER_NAME -type f -printf "%h\n")/$FF_DRIVER_NAME $FUZZ_DIR/
+
+# build afl binary with bigger bitmap
+cd && rm -r $SRC_DIR/ && cp -r /benchmark/source/libdwarf-20190529 /benchmark/
+
+export FUZZ_DIR=/binary/afl-map-size-18
+mkdir -p $FUZZ_DIR
+export CC="/AFL-map-size-18/afl-clang-fast -fsanitize=address"
+export CXX="/AFL-map-size-18/afl-clang-fast++ -fsanitize=address"
+
+cd $SRC_DIR && autoreconf -i -f && ./configure --disable-shared && make -j$(nproc)
+mv $(find . -name $FF_DRIVER_NAME -type f -printf "%h\n")/$FF_DRIVER_NAME $FUZZ_DIR/

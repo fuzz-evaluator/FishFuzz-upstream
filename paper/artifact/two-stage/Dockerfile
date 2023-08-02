@@ -84,6 +84,12 @@ RUN git clone https://github.com/google/afl /AFL && \
     sed -i 's/id\:%06llu\,sig\:%02u\,%s/id\:%06llu\,sig\:%02u\,%s\,%lld/g' `ls afl-fuzz.c` && \
     sed -i 's/describe_op(0)/describe_op(0), get_cur_time() - start_time/g' `ls afl-fuzz.c` && \
     sed -i 's/describe_op(hnb)/describe_op(hnb), get_cur_time() - start_time/g' `ls afl-fuzz.c` && \
+    cp -a /AFL /AFL-map-size-18 && \
+    make -j && make -C llvm_mode
+
+# build AFL, but with a bitmap size of 18 bits
+RUN cd /AFL-map-size-18 && \
+    sed -i "s@#define MAP_SIZE_POW2.*@#define MAP_SIZE_POW2 18@" config.h && \
     make -j && make -C llvm_mode
 
 # prepare source package
